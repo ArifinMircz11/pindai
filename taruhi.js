@@ -1,36 +1,54 @@
+// Asumsikan file data-siswa.js sudah dimuat sebelum file ini
+// <script src="data-siswa.js"></script> harus di atas <script src="taruhi.js"></script>
+
 const video = document.getElementById('video');
 const resultSpan = document.getElementById('result');
 const status = document.getElementById('status');
-const tableBody = document.querySelector("#absensiTable tbody");
+const tableBody = document.getElementById('tabel-hasil'); // tbody element
 const codeReader = new ZXing.BrowserMultiFormatReader();
+const sudahScan = new Set(); // mencegah duplikat
 
-let scanCount = 0;
-const dataSiswa = siswaData;
+function tampilkanKeTabel(barcode, nama) {
+  const baris = document.createElement('tr');
+  const no = tableBody.rows.length + 1;
 
-mulaiScan();
+  baris.innerHTML = `
+    <td>${no}</td>
+    <td>${barcode}</td>
+    <td>${nama || '-'}</td>
+    <td>${new Date().toLocaleTimeString()}</td>
+    <td>-</td>
+  `;
 
-function mulaiScan() {
-  codeReader.listVideoInputDevices().then(devices => {
-    if (devices.length === 0) return alert("Kamera tidak ditemukan!");
-    const camId = devices[0].deviceId;
-    codeReader.decodeFromVideoDevice(camId, video, (result, err) => {
-      if (result) {
-        const code = result.text;
-        resultSpan.textContent = code;
-        const nama = dataSiswa[code] || "Tidak Dikenal";
-        status.textContent = `✅ ${nama} (${code})`;
-        tambahKeTabel(code, nama);
-      }
-    });
+  tableBody.appendChild(baris);
+}
+
+function kirim(barcode) {
+  fetch("taruhi.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `barcode=${encodeURIComponent(barcode)}`
+  }).then(() => {
+    status.textContent = "✅ Terkirim: " + barcode;
+  }).catch(err => {
+    status.textContent = "❌ Gagal kirim: " + err;
   });
 }
 
-function tambahKeTabel(barcode, nama) {
-  scanCount++;
-  const row = tableBody.insertRow();
-  row.insertCell(0).textContent = scanCount;
-  row.insertCell(1).textContent = barcode;
-  row.insertCell(2).textContent = nama;
-  row.insertCell(3).textContent = new Date().toLocaleTimeString();
-  row.insertCell(4).textContent = "-";
-}
+codeReader.listVideoInputDevices().then(devices => {
+  if (devices.length === 0) return alert("Kamera tidak ditemukan!");
+  const camId = devices[0].deviceId;
+  codeReader.decodeFromVideoDevice(camId, video, (result, err) => {
+    if (result) {
+      const code = result.text;
+      if (sudahScan.has(code)) return;
+
+      sudahScan.add(code);
+      const nama = siswa[code]; // siswa dari data-siswa.js
+      resultSpan.textContent = code;
+
+      tampilkanKeTabel(code, nama);
+      kirim(code);
+    }
+  });
+});
