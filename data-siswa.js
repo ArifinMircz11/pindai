@@ -1,5 +1,5 @@
 {
-const dataSiswa = [
+const dataSiswa‎ = [
     {"id": 24001, "name": "ACHMAD ULYA RAZAN"},
     {"id": 24002, "name": "ADELLA KHAIRUNNISA"},
     {"id": 24003, "name": "AGNIA KAMILA NORRAHMAN"},
