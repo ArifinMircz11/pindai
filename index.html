@@ -4,7 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scan Absensi Siswa</title>
+
+  <!-- Library Barcode -->
   <script src="https://unpkg.com/@zxing/library@latest"></script>
+  <!-- Data Siswa -->
+  <script src="data-siswa.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,6 +23,19 @@
       border: 4px solid #3498db;
       border-radius: 12px;
     }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 95%;
+    }
+    th, td {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+    }
     #result {
       margin: 10px 0;
       font-size: 1.2em;
@@ -27,33 +45,16 @@
       color: green;
       font-weight: bold;
     }
-    table {
-      margin: 20px auto;
-      border-collapse: collapse;
-      width: 95%;
-      max-width: 800px;
-      background: #fff;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-    }
-    th {
-      background: #3498db;
-      color: white;
-    }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
   </style>
 </head>
 <body>
+
   <h1>📷 Scan Absensi Siswa</h1>
   <video id="video" playsinline></video>
   <p>Barcode Terbaca: <span id="result">-</span></p>
   <p id="status"></p>
 
-  <table id="absensiTable">
+  <table>
     <thead>
       <tr>
         <th>No</th>
@@ -63,54 +64,11 @@
         <th>Pulang</th>
       </tr>
     </thead>
-    <tbody>
-      <!-- Baris hasil scan akan ditambahkan di sini -->
-    </tbody>
+    <tbody id="tabel-hasil"></tbody>
   </table>
 
-  <script>
-    const video = document.getElementById('video');
-    const resultSpan = document.getElementById('result');
-    const status = document.getElementById('status');
-    const tableBody = document.querySelector("#absensiTable tbody");
-    const codeReader = new ZXing.BrowserMultiFormatReader();
+  <!-- Script Absensi -->
+  <script src="taruhi.js"></script>
 
-    let scanCount = 0;
-
-    function tambahKeTabel(barcode) {
-      scanCount++;
-      const row = tableBody.insertRow();
-      row.insertCell(0).textContent = scanCount;         // No
-      row.insertCell(1).textContent = barcode;           // ID Card
-      row.insertCell(2).textContent = "Nama Siswa";      // Dummy nama, bisa ganti pakai fetch ke server
-      row.insertCell(3).textContent = new Date().toLocaleTimeString(); // Pagi
-      row.insertCell(4).textContent = "-";               // Pulang (kosong dulu)
-    }
-
-    function kirim(barcode) {
-      fetch("taruhi.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `barcode=${encodeURIComponent(barcode)}`
-      }).then(() => {
-        status.textContent = "✅ Terkirim: " + barcode;
-        tambahKeTabel(barcode);
-      }).catch(err => {
-        status.textContent = "❌ Gagal kirim: " + err;
-      });
-    }
-
-    codeReader.listVideoInputDevices().then(devices => {
-      if (devices.length === 0) return alert("Kamera tidak ditemukan!");
-      const camId = devices[0].deviceId;
-      codeReader.decodeFromVideoDevice(camId, video, (result, err) => {
-        if (result) {
-          const code = result.text;
-          resultSpan.textContent = code;
-          kirim(code);
-        }
-      });
-    });
-  </script>
 </body>
 </html>
