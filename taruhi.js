@@ -1,70 +1,40 @@
-const video = document.getElementById('video');
-const resultSpan = document.getElementById('result');
-const status = document.getElementById('status');
-const tableBody = document.getElementById('tabel-hasil');
-const codeReader = new ZXing.BrowserMultiFormatReader();
+function prosesAbsen(scannedId) {
+  const siswa = dataSiswa.find(s => s.id === scannedId); // dataSiswa dari data-siswa.js
 
-const scanLog = {}; // { id: { pagi: ..., pulang: ... } }
+  if (!siswa) {
+    statusElement.textContent = 'ID tidak ditemukan';
+    statusElement.style.color = 'red';
+    return;
+  }
 
-function tampilkanKeTabel(id, nama, waktu, tipe) {
-  let row = document.querySelector(`tr[data-id="${id}"]`);
+  const now = new Date();
+  const jam = now.getHours();
+  const waktu = jam < 12 ? 'pagi' : 'pulang';
 
+  // Cek apakah sudah ada di tabel
+  let row = document.getElementById(`row-${siswa.id}`);
   if (!row) {
     // Tambah baris baru
     row = document.createElement('tr');
-    row.setAttribute('data-id', id);
+    row.id = `row-${siswa.id}`;
     row.innerHTML = `
-      <td>${tableBody.rows.length + 1}</td>
-      <td>${id}</td>
-      <td>${nama || '-'}</td>
-      <td>${tipe === 'pagi' ? waktu : '-'}</td>
-      <td>${tipe === 'pulang' ? waktu : '-'}</td>
+      <td>${document.querySelectorAll('#tabel-hasil tr').length + 1}</td>
+      <td>${siswa.id}</td>
+      <td>${siswa.nama}</td>
+      <td id="pagi-${siswa.id}">-</td>
+      <td id="pulang-${siswa.id}">-</td>
     `;
-    tableBody.appendChild(row);
+    document.getElementById('tabel-hasil').appendChild(row);
+  }
+
+  // Isi kolom absensi
+  const waktuCell = document.getElementById(`${waktu}-${siswa.id}`);
+  if (waktuCell.textContent !== '-') {
+    statusElement.textContent = `Sudah absen ${waktu}`;
+    statusElement.style.color = 'orange';
   } else {
-    // Update data scan
-    const cellPagi = row.cells[3];
-    const cellPulang = row.cells[4];
-    if (tipe === 'pagi' && cellPagi.textContent === '-') {
-      cellPagi.textContent = waktu;
-    } else if (tipe === 'pulang') {
-      cellPulang.textContent = waktu;
-    }
+    waktuCell.textContent = now.toLocaleTimeString();
+    statusElement.textContent = `Absensi ${waktu} berhasil!`;
+    statusElement.style.color = 'green';
   }
 }
-
-function kirim(barcode) {
-  fetch("taruhi.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `barcode=${encodeURIComponent(barcode)}`
-  }).then(() => {
-    status.textContent = "✅ Data terkirim: " + barcode;
-  }).catch(err => {
-    status.textContent = "❌ Gagal kirim: " + err;
-  });
-}
-
-codeReader.listVideoInputDevices().then(devices => {
-  if (devices.length === 0) return alert("Kamera tidak ditemukan!");
-  const camId = devices[0].deviceId;
-
-  codeReader.decodeFromVideoDevice(camId, video, (result, err) => {
-    if (result) {
-      const id = result.text.trim();
-      const nama = siswa[id] || "(Tidak dikenal)";
-      const waktu = new Date().toLocaleTimeString();
-
-      resultSpan.textContent = id;
-      kirim(id);
-
-      if (!scanLog[id]) {
-        scanLog[id] = { pagi: waktu, pulang: null };
-        tampilkanKeTabel(id, nama, waktu, 'pagi');
-      } else {
-        scanLog[id].pulang = waktu;
-        tampilkanKeTabel(id, nama, waktu, 'pulang');
-      }
-    }
-  });
-});
