@@ -11,30 +11,39 @@ function prosesAbsen(scannedId) {
   const jam = now.getHours();
   const waktu = jam < 12 ? 'pagi' : 'pulang';
 
-  // Cek apakah sudah ada di tabel
   let row = document.getElementById(`row-${siswa.id}`);
+  const waktuStr = now.toLocaleTimeString();
+
   if (!row) {
-    // Tambah baris baru
+    // Tambahkan baris baru jika belum ada
     row = document.createElement('tr');
     row.id = `row-${siswa.id}`;
     row.innerHTML = `
-      <td>${document.querySelectorAll('#tabel-hasil tr').length + 1}</td>
+      <td>${document.querySelectorAll('#tabel-hasil tbody tr').length + 1}</td>
       <td>${siswa.id}</td>
       <td>${siswa.nama}</td>
       <td id="pagi-${siswa.id}">-</td>
       <td id="pulang-${siswa.id}">-</td>
     `;
-    document.getElementById('tabel-hasil').appendChild(row);
+    document.querySelector('#tabel-hasil tbody').appendChild(row);
   }
 
-  // Isi kolom absensi
+  // Pilih sel waktu absensi
   const waktuCell = document.getElementById(`${waktu}-${siswa.id}`);
+
+  if (!waktuCell) {
+    statusElement.textContent = 'Kesalahan sistem';
+    statusElement.style.color = 'red';
+    return;
+  }
+
   if (waktuCell.textContent !== '-') {
     statusElement.textContent = `Sudah absen ${waktu}`;
     statusElement.style.color = 'orange';
-  } else {
-    waktuCell.textContent = now.toLocaleTimeString();
-    statusElement.textContent = `Absensi ${waktu} berhasil!`;
-    statusElement.style.color = 'green';
+    return;
   }
+
+  waktuCell.textContent = waktuStr;
+  statusElement.textContent = `Absensi ${waktu} berhasil!`;
+  statusElement.style.color = 'green';
 }
