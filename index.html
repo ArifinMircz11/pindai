@@ -4,18 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scan Absensi Siswa</title>
-
-  <!-- Library Barcode -->
   <script src="https://unpkg.com/@zxing/library@latest"></script>
-  <!-- Data Siswa -->
-  <script src="data-siswa.js"></script>
-
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
       background: #f4f6f8;
       padding: 20px;
+      text-align: center;
     }
     video {
       width: 90%;
@@ -23,37 +18,46 @@
       border: 4px solid #3498db;
       border-radius: 12px;
     }
-    table {
-      margin: 20px auto;
-      border-collapse: collapse;
-      width: 95%;
-    }
-    th, td {
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-    }
-    th {
-      background-color: #3498db;
-      color: white;
+    h1 {
+      margin-bottom: 10px;
     }
     #result {
-      margin: 10px 0;
+      margin-top: 10px;
       font-size: 1.2em;
       font-weight: bold;
+      color: #333;
     }
     #status {
       color: green;
       font-weight: bold;
     }
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      font-size: 14px;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
   </style>
 </head>
 <body>
-
   <h1>📷 Scan Absensi Siswa</h1>
   <video id="video" playsinline></video>
   <p>Barcode Terbaca: <span id="result">-</span></p>
   <p id="status"></p>
 
+  <h2>📋 Tabel Absensi</h2>
   <table>
     <thead>
       <tr>
@@ -67,8 +71,8 @@
     <tbody id="tabel-hasil"></tbody>
   </table>
 
-  <!-- Script Absensi -->
+  <!-- Skrip -->
+  <script src="data-siswa.js"></script>
   <script src="taruhi.js"></script>
-
 </body>
 </html>
